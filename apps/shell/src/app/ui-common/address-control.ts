@@ -1,14 +1,13 @@
-import { Component, model } from '@angular/core';
-import { FormField, FormValueControl } from '@angular/forms/signals';
+import { Component, input } from '@angular/core';
+import { FieldTree, FormField } from '@angular/forms/signals';
 import { Address } from './address.model';
-import { injectFieldTree } from './inject-field-tree';
 
 
 @Component({
   selector: 'app-adress-form',
   imports: [FormField],
   template: `
-    @let addressForm = field();
+    @let addressForm = formField();
 
     <h6>Address</h6>
 
@@ -49,8 +48,6 @@ import { injectFieldTree } from './inject-field-tree';
     }
   `
 })
-export class AddressControl implements FormValueControl<Address> {
-  protected readonly field = injectFieldTree<Address>();
-  
-  value = model.required<Address>();
+export class AddressControl {
+  readonly formField = input.required<FieldTree<Address>>();
 }
