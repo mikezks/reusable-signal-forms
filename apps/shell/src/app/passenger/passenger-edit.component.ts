@@ -1,12 +1,15 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, input, linkedSignal, numberAttribute } from '@angular/core';
-import { apply, createMetadataKey, form, FormField, metadata, required, schema } from '@angular/forms/signals';
+import { Component, computed, input, linkedSignal, numberAttribute, Signal } from '@angular/core';
+import { apply, createManagedMetadataKey, form, FormField, metadata, required, schema, validate } from '@angular/forms/signals';
 import { AddressControl } from '../ui-common/address-control';
 import { Address, addressSchema, initialAddress } from '../ui-common/address.model';
 import { initialPassenger, Passenger } from './passenger';
 
 // Custom Field Property
-const ALLOWED_FIRSTNAMES = createMetadataKey<string[]>();
+// const ALLOWED_FIRSTNAMES = createMetadataKey<string[]>();
+const ALLOWED_FIRSTNAMES = createManagedMetadataKey<Signal<string[]>, string[]>(
+  signal => computed(() => signal() || [])
+);
 
 // Step 3: Field Logic: Validators, Readonly, Disabled, Field Metadata
 export const passengerSchema = schema<Passenger & {
@@ -21,14 +24,15 @@ export const passengerSchema = schema<Passenger & {
     message: 'Either Firstname or Lastname needs to have a value.',
     when: ctx => !ctx.valueOf(passengerPath.firstName)
   });
-  /* validate(passengerPath.name, ({ value }) =>
-    ['Sorglos', 'Müller', 'Schmidt'].includes(value())
+  validate(passengerPath.firstName, ({ value, fieldTree }) => {
+    const allowedFirsttnames = fieldTree().metadata(ALLOWED_FIRSTNAMES)?.() || [];
+    return allowedFirsttnames.includes(value())
       ? null
       : {
         kind: 'forbiddenLastname',
         message: 'This Lastname is not allowed.'
-      }
-  ); */
+      };
+  });
   apply(passengerPath.address, addressSchema);
 });
 
@@ -61,7 +65,7 @@ export class PassengerEditComponent {
   protected readonly editForm = form(this.passengerWithAddress, passengerSchema);
   
   protected readonly allowedFirstnames = computed(() =>
-    this.editForm.firstName().metadata(ALLOWED_FIRSTNAMES)?.()?.join(',') || ''
+    this.editForm.firstName().metadata(ALLOWED_FIRSTNAMES)?.().join(',') || ''
   );
 
   protected save(): void {
