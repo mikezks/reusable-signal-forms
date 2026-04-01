@@ -1,59 +1,52 @@
-# FlightDemo
+# Signal Forms
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.0.
+## Metadata
 
-## Development server
+Previous version and Angular docs:
 
-To start a local development server, run:
-
-```bash
-ng serve
+```ts
+const ALLOWED_FIRSTNAMES = createMetadataKey<string[]>();
+metadata(passengerPath.firstName, ALLOWED_FIRSTNAMES, () => ['Mia', 'Hanna', 'Sofia']);
+const allowedFirstnames = computed(() =>
+  this.editForm.firstName().metadata(ALLOWED_FIRSTNAMES)().join(',')
+);
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Current and correct typing, because is not guaranteed that the MetadataKey is present and a type-compliant value is already set:
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```ts
+const ALLOWED_FIRSTNAMES = createMetadataKey<string[]>();
+metadata(passengerPath.firstName, ALLOWED_FIRSTNAMES, () => ['Mia', 'Hanna', 'Sofia']);
+const allowedFirstnames = computed(() =>
+  this.editForm.firstName().metadata(ALLOWED_FIRSTNAMES)?.()?.join(',') || ''
+);
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Possible partial solution, but not easy to implement:
 
-```bash
-ng generate --help
+```ts
+// Initial value
+const ALLOWED_FIRSTNAMES = createManagedMetadataKey<Signal<string[]>, string[]>(
+  signal => computed(() => signal() || [])
+);
+metadata(passengerPath.firstName, ALLOWED_FIRSTNAMES, () => ['Mia', 'Hanna', 'Sofia']);
+const allowedFirstnames = computed(() =>
+  this.editForm.firstName().metadata(ALLOWED_FIRSTNAMES)?.().join(',') || ''
+);
 ```
 
-## Building
+Still, one optional chaining operator is needed and therefor we also need to define a fallback value in chase the chain is undefined.
 
-To build the project run:
+Would be helpful, if we could strictly type the MetadataKeys:
 
-```bash
-ng build
+```ts
+const editForm = form(
+  this.passengerWithAddress,
+  passengerSchema,
+  metadataType<{
+    firstName: {
+      ALLOWED_FIRSTNAMES: typeof ALLOWED_FIRSTNAMES
+    }
+  }>()
+);
 ```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
