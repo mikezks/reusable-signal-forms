@@ -15,7 +15,7 @@ const ALLOWED_FIRSTNAMES = createManagedMetadataKey<Signal<string[]>, string[]>(
 export const passengerSchema = schema<Passenger & {
   address: Address
 }>(passengerPath => {
-  metadata(passengerPath.firstName, ALLOWED_FIRSTNAMES, () => ['Mia', 'Hanna', 'Sofia']);
+  metadata(passengerPath.firstName, ALLOWED_FIRSTNAMES, () => ['Emma', 'Mary', 'Hanna', 'Sarah']);
   required(passengerPath.firstName, {
     message: 'Either Firstname or Lastname needs to have a value.',
     when: ctx => !ctx.valueOf(passengerPath.name)
@@ -29,8 +29,8 @@ export const passengerSchema = schema<Passenger & {
     return allowedFirsttnames.includes(value())
       ? null
       : {
-        kind: 'forbiddenLastname',
-        message: 'This Lastname is not allowed.'
+        kind: 'forbiddenFirstname',
+        message: 'This Firstname is not allowed. Enter one of the following: ' + allowedFirsttnames.join(', ')
       };
   });
   apply(passengerPath.address, addressSchema);
@@ -42,31 +42,27 @@ export const passengerSchema = schema<Passenger & {
   imports: [
     // Step 4: UI Control -> Directive for Template Binding
     FormField,
-    AddressControl
+    AddressControl,
 ],
   templateUrl: './passenger-edit.component.html'
 })
 export class PassengerEditComponent {
-  readonly id = input(3001, { transform: numberAttribute });
+  readonly id = input(610, { transform: numberAttribute });
 
   // Step 1: Data Model -> Writable Signal, Resource Value
-  protected readonly passengerResource = httpResource<Passenger>(() => ({
-    url: 'https://demo.angulararchitects.io/api/passenger',
-    params: { id: this.id() }
-  }), { defaultValue: initialPassenger });
-  protected readonly passengerWithAddress = linkedSignal(
-    () => ({
-      ...this.passengerResource.value(),
-      address: initialAddress
-    })
-  );
+  protected readonly passengerResource = httpResource<Passenger>(
+    () => 'https://demo.angulararchitects.io/api/passenger/' + this.id()
+  , { defaultValue: initialPassenger });
+  protected readonly passengerWithAddress = linkedSignal(() => ({
+    ...this.passengerResource.value(),
+    address: {
+      ...initialAddress,
+      street: 'Main Street'
+    }
+  }));
 
   // Step 2: Field State -> valid, dirty, touched, value, etc. 
   protected readonly editForm = form(this.passengerWithAddress, passengerSchema);
-  
-  protected readonly allowedFirstnames = computed(() =>
-    this.editForm.firstName().metadata(ALLOWED_FIRSTNAMES)?.().join(',') || ''
-  );
 
   protected save(): void {
     console.log({
