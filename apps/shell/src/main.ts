@@ -1,5 +1,5 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { PassengerEditComponent } from './app/passenger/passenger-edit.component';
+import { App } from './app/ui-common/app';
 
-bootstrapApplication(PassengerEditComponent)
+bootstrapApplication(App)
   .catch((err) => console.error(err));

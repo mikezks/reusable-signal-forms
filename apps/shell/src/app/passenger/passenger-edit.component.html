@@ -4,7 +4,7 @@
   </div>
 
   <div class="card-body">
-    <form>
+    <form [formRoot]="editForm">
       <div class="form-group">
         <label for="id">ID:</label>
         <input id="id" [formField]="editForm.id" type="number" class="form-control" />
@@ -42,23 +42,23 @@
       </div>
 
       <app-adress-form [formField]="editForm.address" />
-    </form>
 
-    <div class="form-group">
-      <button
-        (click)="save()"
-        [disabled]="!editForm().valid()"
-        class="btn btn-default"
-      >
-        Save
-      </button>
-      <button
-        (click)="passengerResource.reload()"
-        class="btn btn-default"
-      >
-        Reload
-      </button>
-      <p>Status: {{ passengerResource.status() }}</p>
-    </div>
+      <div class="form-group">
+        <button
+          type="submit"
+          [disabled]="!editForm().valid()"
+          class="btn btn-default"
+        >
+          Save
+        </button>
+        <button
+          (click)="passengerResource.reload()"
+          class="btn btn-default"
+        >
+          Reload
+        </button>
+        <p>Status: {{ passengerResource.status() }}</p>
+      </div>
+    </form>
   </div>
 </div>
